@@ -7,6 +7,4 @@ id_rsa
 *.cfg
 secrets.py
 keys.tf
-leaf
-credentials/**
 
