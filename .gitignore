@@ -1,0 +1,12 @@
+*.tfvars
+*.tfstate
+*.backup
+id_rsa
+*.p12
+*.pem
+*.cfg
+secrets.py
+keys.tf
+leaf
+credentials/**
+
