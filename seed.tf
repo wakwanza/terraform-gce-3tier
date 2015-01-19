@@ -71,7 +71,7 @@ resource "google_compute_firewall" "webwall" {
     }
 
     source_ranges = ["${var.external_net}"]
-    source_tags = ["web"]
+    target_tags = ["web"]
 }
 
 #Create the route for nat and no ips
