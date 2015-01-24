@@ -14,7 +14,7 @@ resource "google_compute_network" "production" {
 
 #Provision the static IPs for nginx
 resource "google_compute_address" "ngnxaddress" {
-	count = "2"
+	count = “3”
 	name = "ngx${count.index}address"
 }
 
@@ -165,7 +165,7 @@ resource "google_compute_disk" "data" {
 
 #Setup the frontend loadbalancers
 resource "google_compute_instance" "loadbalancers" {
-	count = "2"
+	count = “3”
 	name = "lb${count.index}"
 	machine_type = "${var.layer1type.gce}"
 	zone = "${lookup(var.azones, concat("zon", count.index))}"
@@ -199,7 +199,7 @@ resource "google_compute_instance" "appnodes" {
 	count = "3"
 	name = "app${count.index}"
 	machine_type = "${var.layer2type.gce}"
-	zone = "${lookup(var.azones, concat("zon", count.index))}"
+	zone = "${element(google_compute_instance.loadbalancers.*.zone,count.index)}"
 	tags = ["app", "internal", "layer2","ssh"]
 
 	
@@ -230,7 +230,7 @@ resource "google_compute_instance" "dbsnodes" {
 	count = "3"
 	name = "dbs${count.index}"
 	machine_type = "${var.layer3type.gce}"
-	zone = "${lookup(var.azones, concat("zon", count.index))}"
+	zone = "${element(google_compute_instance.loadbalancers.*.zone,count.index)}"
 	tags = ["dbs", "internal", "layer3","ssh"]
 		
 	disk {
