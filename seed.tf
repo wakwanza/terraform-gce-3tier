@@ -120,7 +120,7 @@ resource "google_compute_instance" "natgateway" {
 			user = "${var.bastion_user}"
 			key_file = "${var.bastion_key}"
 		}
-		script = "setfire.sh"
+		script = "scripts/setfire.sh"
 	}
 }
 
@@ -150,7 +150,7 @@ resource "google_compute_instance" "bastion" {
 			user = "${var.bastion_user}"
 			key_file = "${var.bastion_key}"
 		}
-		script = "setfire.sh"
+		script = "scripts/setfire.sh"
 	}
 }
 
@@ -190,7 +190,7 @@ resource "google_compute_instance" "loadbalancers" {
 			user = "${var.bastion_user}"
 			key_file = "${var.key_path}"
 		}
-		script = "setfire.sh"
+		script = "scripts/setfire.sh"
 	}
 }
 
@@ -201,6 +201,7 @@ resource "google_compute_instance" "appnodes" {
 	machine_type = "${var.layer2type.gce}"
 	zone = "${element(google_compute_instance.loadbalancers.*.zone,count.index)}"
 	tags = ["app", "internal", "layer2","ssh"]
+	depends_on = ["google_compute_route.no_ips"]
 
 	
 	disk {
@@ -220,7 +221,7 @@ resource "google_compute_instance" "appnodes" {
 			user = "${var.bastion_user}"
 			key_file = "${var.bastion_key}"
 		}
-		script = "setfire.sh"
+		script = "scripts/setfire.sh"
 	}	
 
 }
@@ -232,6 +233,7 @@ resource "google_compute_instance" "dbsnodes" {
 	machine_type = "${var.layer3type.gce}"
 	zone = "${element(google_compute_instance.loadbalancers.*.zone,count.index)}"
 	tags = ["dbs", "internal", "layer3","ssh"]
+	depends_on = ["google_compute_route.no_ips"]
 		
 	disk {
 		image = "centos-6-v20141205"
@@ -255,6 +257,6 @@ resource "google_compute_instance" "dbsnodes" {
 			user = "${var.bastion_user}"
 			key_file = "${var.bastion_key}"
 		}
-		scripts = ["setfire.sh","mountformat.sh"]
+		scripts = ["scripts/setfire.sh","scripts/mountformat.sh"]
 	}
 }
