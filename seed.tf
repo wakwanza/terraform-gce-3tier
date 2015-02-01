@@ -200,7 +200,7 @@ resource "google_compute_instance" "appnodes" {
 	name = "app${count.index}"
 	machine_type = "${var.layer2type.gce}"
 	zone = "${element(google_compute_instance.loadbalancers.*.zone,count.index)}"
-	tags = ["app", "internal", "layer2","ssh"]
+	tags = ["app", "internal", "layer2","ssh","no-ip"]
 	depends_on = ["google_compute_route.no_ips"]
 
 	
@@ -232,7 +232,7 @@ resource "google_compute_instance" "dbsnodes" {
 	name = "dbs${count.index}"
 	machine_type = "${var.layer3type.gce}"
 	zone = "${element(google_compute_instance.loadbalancers.*.zone,count.index)}"
-	tags = ["dbs", "internal", "layer3","ssh"]
+	tags = ["dbs", "internal", "layer3","ssh","no-ip"]
 	depends_on = ["google_compute_route.no_ips"]
 		
 	disk {
