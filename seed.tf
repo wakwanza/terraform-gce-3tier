@@ -97,11 +97,14 @@ resource "google_compute_instance" "natgateway" {
 	
 	disk {
 		image = "centos-6-v20141205"
+		type = "pd-ssd"
 	}	
 	
-	network {
-		source = "${google_compute_network.production.name}"
-		address = "${element(google_compute_address.nataddress.*.address,count.index)}"
+	network_interface {
+		network = "${google_compute_network.production.name}"
+		access_config { 
+		nat_ip = "${element(google_compute_address.nataddress.*.address,count.index)}"
+		}
 	}
 	metadata {	
 		host_group = "natgate"
@@ -113,15 +116,9 @@ resource "google_compute_instance" "natgateway" {
 			user = "${var.bastion_user}"
 			key_file = "${var.bastion_key}"
 		}
-		script = "setnat.sh"
+		scripts = ["scripts/setnat.sh","scripts/setfire.sh"]
 	}	
-	provisioner "remote-exec" {
-		connection {
-			user = "${var.bastion_user}"
-			key_file = "${var.bastion_key}"
-		}
-		script = "scripts/setfire.sh"
-	}
+
 }
 
 #Create the bastion box node
@@ -136,9 +133,11 @@ resource "google_compute_instance" "bastion" {
 		image = "centos-6-v20141205"
 	}
 	
-	network {
-		source = "${google_compute_network.production.name}"
-		address = "${element(google_compute_address.bastionaddress.*.address,count.index)}"
+	network_intaerface {
+		network = "${google_compute_network.production.name}"
+		access_config { 
+		nat_ip = "${element(google_compute_address.bastionaddress.*.address,count.index)}"
+		}
 	}
 			
 	metadata {	
@@ -175,9 +174,11 @@ resource "google_compute_instance" "loadbalancers" {
 		image = "centos-6-v20141205"
 	}
 	
-	network {
-		source = "${google_compute_network.production.name}"
-		address = "${element(google_compute_address.ngnxaddress.*.address,count.index)}"
+	network_interface {
+		network = "${google_compute_network.production.name}"
+		access_config { 
+		nat_ip = "${element(google_compute_address.ngnxaddress.*.address,count.index)}"
+		}
 	}
 	
 	metadata {	
@@ -206,23 +207,17 @@ resource "google_compute_instance" "appnodes" {
 	
 	disk {
 		image = "centos-6-v20141205"
+		type = "pd-ssd"
 	}
 	
-	network {
-		source = "${google_compute_network.production.name}"
+	network_interface {
+		network = "${google_compute_network.production.name}"
 	}
 			
 	metadata {	
 		host_group = "appnodes"
 		sshKeys = "${var.sshkeys.opskey}"
 	}
-	provisioner "remote-exec" {
-		connection {
-			user = "${var.bastion_user}"
-			key_file = "${var.bastion_key}"
-		}
-		script = "scripts/setfire.sh"
-	}	
 
 }
 
@@ -237,14 +232,15 @@ resource "google_compute_instance" "dbsnodes" {
 		
 	disk {
 		image = "centos-6-v20141205"
+		type = "pd-ssd"
 	}
 	
 	disk {
 		disk = "${element(google_compute_disk.data.*.name,count.index)}"
 	}
 	
-	network {
-		source = "${google_compute_network.production.name}"
+	network_interface {
+		network = "${google_compute_network.production.name}"
 	}
 			
 	metadata {	
@@ -252,11 +248,4 @@ resource "google_compute_instance" "dbsnodes" {
 		sshKeys = "${var.sshkeys.solidkey}"
 	}
 		
-	provisioner "remote-exec" {
-		connection {
-			user = "${var.bastion_user}"
-			key_file = "${var.bastion_key}"
-		}
-		scripts = ["scripts/setfire.sh","scripts/mountformat.sh"]
-	}
 }
